@@ -1,5 +1,4 @@
 const { Pool } = require("pg");
-const path = require("path");
 
 async function getDb() {
   const pool = new Pool({

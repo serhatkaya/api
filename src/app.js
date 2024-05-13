@@ -2,11 +2,13 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const { getDb } = require("./getdb");
 getDb();
+const cors = require("cors");
 
 const authRoutes = require("./routes/auth");
 const tasksRoutes = require("./routes/tasks");
 
 const app = express();
+app.use(cors());
 
 // Middleware
 app.use(bodyParser.json());
@@ -16,5 +18,4 @@ app.use("/auth", authRoutes);
 app.use("/tasks", tasksRoutes);
 
 const PORT = process.env.PORT || 3000;
-console.log('BABAKO')
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
