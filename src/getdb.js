@@ -1,55 +1,56 @@
-const fs = require("fs");
-const sqlite3 = require("sqlite3").verbose();
-
+const { Pool } = require("pg");
 const path = require("path");
 
-function getDb() {
-  const dbFile = path.join(process.cwd(), "src", "db", "database.sqlite");
-  let retDb;
-  if (!fs.existsSync(dbFile)) {
-    fs.closeSync(fs.openSync(dbFile, "w"));
+async function getDb() {
+  const pool = new Pool({
+    connectionString: process.env.POSTGRES_URL,
+  });
 
-    const db = new sqlite3.Database(dbFile, (err) => {
-      if (err) {
-        console.error(err.message);
-        return;
-      }
-      console.log("Connected to the SQLite database.");
-      // Create users table if it doesn't exist
-      db.run(
-        `CREATE TABLE IF NOT EXISTS users (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
+  try {
+    // Check if users table exists
+    const usersTableExists = await pool.query(
+      `SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_name = 'users'
+      )`
+    );
+
+    // Check if tasks table exists
+    const tasksTableExists = await pool.query(
+      `SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_name = 'tasks'
+      )`
+    );
+
+    // If users table doesn't exist, create it
+    if (!usersTableExists.rows[0].exists) {
+      await pool.query(
+        `CREATE TABLE users (
+          id SERIAL PRIMARY KEY,
           username TEXT NOT NULL UNIQUE,
           password TEXT NOT NULL
-        )`,
-        (err) => {
-          if (err) {
-            console.error(err.message, "ERROR");
-          }
-        }
+        )`
       );
-      // Create tasks table if it doesn't exist
-      db.run(
-        `CREATE TABLE IF NOT EXISTS tasks (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
+    }
+
+    // If tasks table doesn't exist, create it
+    if (!tasksTableExists.rows[0].exists) {
+      await pool.query(
+        `CREATE TABLE tasks (
+          id SERIAL PRIMARY KEY,
           task_number INTEGER,
           title TEXT,
           description TEXT,
           status TEXT
-        )`,
-        (err) => {
-          if (err) {
-            console.error(err.message);
-          }
-        }
+        )`
       );
-    });
-    retDb = db;
-  } else {
-    retDb = new sqlite3.Database(dbFile);
+    }
+  } catch (err) {
+    console.error("Error initializing database:", err);
   }
 
-  return retDb;
+  return pool;
 }
 
 module.exports = { getDb };
