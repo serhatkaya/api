@@ -41,7 +41,8 @@ async function getDb() {
           task_number INTEGER,
           title TEXT,
           description TEXT,
-          status TEXT
+          status TEXT,
+          user_id INTEGER REFERENCES users(id) ON DELETE CASCADE
         )`
       );
     }
