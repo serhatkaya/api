@@ -38,7 +38,7 @@ async function getDb() {
       await pool.query(
         `CREATE TABLE tasks (
           id SERIAL PRIMARY KEY,
-          task_number INTEGER,
+          task_number BIGSERIAL UNIQUE,
           title TEXT,
           description TEXT,
           status TEXT,

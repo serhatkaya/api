@@ -21,15 +21,14 @@ const verifyToken = (req, res, next) => {
 // Create Task
 router.post("/", verifyToken, async (req, res) => {
   try {
-    const { task_number, title, description, status } = req.body;
+    const { title, description, status } = req.body;
     const userId = req.userId; // Get the authenticated user's ID
     const query = `
-      INSERT INTO tasks (task_number, title, description, status, user_id)
-      VALUES ($1, $2, $3, $4, $5)
+      INSERT INTO tasks (title, description, status, user_id)
+      VALUES ($1, $2, $3, $4)
       RETURNING id`;
     const db = await getDb();
     const result = await db.query(query, [
-      task_number,
       title,
       description,
       status,
