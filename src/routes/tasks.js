@@ -7,11 +7,15 @@ const { getDb } = require("./../getdb");
 const verifyToken = (req, res, next) => {
   const token = req.headers["authorization"];
   if (!token) {
-    return res.status(401).send("Unauthorized");
+    return res.status(401).json({
+      message: "Unauthorized",
+    });
   }
   jwt.verify(token, "secret", (err, decoded) => {
     if (err) {
-      return res.status(401).send("Unauthorized");
+      return res.status(401).json({
+        message: "Unauthorized",
+      });
     }
     req.userId = decoded.userId;
     next();
@@ -38,7 +42,9 @@ router.post("/", verifyToken, async (req, res) => {
     res.status(201).json({ id: taskId });
   } catch (err) {
     console.error(err.message);
-    res.status(500).send("Server Error");
+    res.status(500).json({
+      message: "Server Error",
+    });
   }
 });
 
@@ -62,12 +68,18 @@ router.put("/:id", verifyToken, async (req, res) => {
     ]);
     if (result.rowCount === 0) {
       // If no rows were updated (task not found or not owned by user)
-      return res.status(404).send("Task not found or unauthorized");
+      return res.status(404).json({
+        message: "Task not found or unauthorized",
+      });
     }
-    res.status(200).send("Task updated successfully");
+    res.status(200).json({
+      message: "Task updated successfully",
+    });
   } catch (err) {
     console.error(err.message);
-    res.status(500).send("Server Error");
+    res.status(500).json({
+      message: "Server Error",
+    });
   }
 });
 
@@ -81,12 +93,18 @@ router.delete("/:id", verifyToken, async (req, res) => {
     const result = await db.query(query, [taskId, userId]);
     if (result.rowCount === 0) {
       // If no rows were deleted (task not found or not owned by user)
-      return res.status(404).send("Task not found or unauthorized");
+      return res.status(404).json({
+        message: "Task not found or unauthorized",
+      });
     }
-    res.status(200).send("Task deleted successfully");
+    res.status(200).json({
+      message: "Task deleted successfully",
+    });
   } catch (err) {
     console.error(err.message);
-    res.status(500).send("Server Error");
+    res.status(500).json({
+      message: "Server Error",
+    });
   }
 });
 
@@ -100,12 +118,16 @@ router.get("/:id", verifyToken, async (req, res) => {
     const result = await db.query(query, [taskId, userId]);
     const task = result.rows[0];
     if (!task) {
-      return res.status(404).send("Task not found or unauthorized");
+      return res.status(404).json({
+        message: "Task not found or unauthorized",
+      });
     }
     res.status(200).json(task);
   } catch (err) {
     console.error(err.message);
-    res.status(500).send("Server Error");
+    res.status(500).json({
+      message: "Server Error",
+    });
   }
 });
 
@@ -136,7 +158,9 @@ router.get("/", verifyToken, async (req, res) => {
     });
   } catch (err) {
     console.error(err.message);
-    res.status(500).send("Server Error");
+    res.status(500).json({
+      message: "Server Error",
+    });
   }
 });
 
