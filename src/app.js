@@ -16,4 +16,5 @@ app.use("/auth", authRoutes);
 app.use("/tasks", tasksRoutes);
 
 const PORT = process.env.PORT || 3000;
+console.log('BABAKO')
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
