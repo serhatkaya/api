@@ -91,17 +91,30 @@ router.get("/:id", verifyToken, async (req, res) => {
   }
 });
 
-// List Tasks (Paginated)
 router.get("/", verifyToken, async (req, res) => {
   try {
     const page = req.query.page || 1;
     const limit = req.query.limit || 10;
     const offset = (page - 1) * limit;
-    const query = `SELECT * FROM tasks LIMIT $1 OFFSET $2`;
+
+    // Query to get total count
+    const totalCountQuery = `SELECT COUNT(*) AS total_count FROM tasks`;
     const db = await getDb();
-    const result = await db.query(query, [limit, offset]);
-    const tasks = result.rows;
-    res.status(200).json(tasks);
+    const totalCountResult = await db.query(totalCountQuery);
+    const totalCount = parseInt(totalCountResult.rows[0].total_count);
+
+    // Query to fetch tasks for the current page
+    const tasksQuery = `SELECT * FROM tasks LIMIT $1 OFFSET $2`;
+    const tasksResult = await db.query(tasksQuery, [limit, offset]);
+    const tasks = tasksResult.rows;
+
+    const totalPages = Math.ceil(totalCount / limit);
+
+    res.status(200).json({
+      total: totalCount,
+      totalPages: totalPages,
+      result: tasks,
+    });
   } catch (err) {
     console.error(err.message);
     res.status(500).send("Server Error");
